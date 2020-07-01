@@ -81,7 +81,7 @@ func (set *Set) coagulate(i uint32, graph *Graph) bool {
 		merge(set.collections[i], set.collections[index], graph.totEdges)
 		set.modularity += set.collections[i].modularity
 		set.collections[index], set.collections[set.numCollections-1] = set.collections[set.numCollections-1], set.collections[index]
-		set.collections[set.numCollections-1] = nil
+		set.collections = set.collections[:set.numCollections-1]
 		set.numCollections--
 		return true
 	}
