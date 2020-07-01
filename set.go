@@ -105,9 +105,9 @@ func (set *Set) coagulate(i uint32, graph *Graph) bool {
 }
 
 func merge(c1, c2 *Collection, totalEdges uint32) {
-	c1.nodes = append(c1.nodes, c2.nodes...)
 
 	for _, node := range c2.nodes {
+		c1.nodes = append(c1.nodes, node)
 		delete(c1.outNodes, node)
 	}
 
@@ -164,7 +164,7 @@ func costNewReg(c1, c2 *Collection, oldRVal float64, n, v uint32) float64 {
 	return newRVal
 }
 
-func (set *Set) writeRes(path, name string) {
+func (set *Set) writeRes(path, name string, graph *Graph) {
 	filename := path + "/" + name
 	file, err := os.Create(filename)
 	check(err, "File cannot be created")
@@ -183,6 +183,14 @@ func (set *Set) writeRes(path, name string) {
 		}
 		fmt.Fprintf(file, "\n")
 	}
+
+	for node := range graph.list {
+		if printed[node] != true {
+			fmt.Fprintf(file, "%d ", node)
+		}
+		printed[node] = true
+	}
+	fmt.Fprintf(file, "\n")
 }
 
 func (set *Set) readRes(path, name string, graph *Graph) {
