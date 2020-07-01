@@ -190,7 +190,6 @@ func (set *Set) writeRes(path, name string, graph *Graph) {
 		}
 		printed[node] = true
 	}
-	fmt.Fprintf(file, "\n")
 }
 
 func (set *Set) readRes(path, name string, graph *Graph) {
