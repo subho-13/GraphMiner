@@ -54,7 +54,7 @@ func main() {
 		case <-tickerWriter.C:
 			{
 				fmt.Println("Writing file")
-				set.writeRes(path, outName)
+				set.writeRes(path, outName, graph)
 			}
 		default:
 		}
@@ -63,7 +63,7 @@ func main() {
 		case <-sigs:
 			{
 				fmt.Println("Stopping Execution. Writing files")
-				set.writeRes(path, outName)
+				set.writeRes(path, outName, graph)
 				stop = true
 			}
 		default:
