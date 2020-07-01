@@ -9,7 +9,7 @@ import (
 	"time"
 )
 
-const path = "/home/subho/ICPCTests"
+const path = "/home/subho"
 
 func main() {
 	scanner := bufio.NewScanner(os.Stdin)
