@@ -81,6 +81,7 @@ func (set *Set) coagulate(i uint32, graph *Graph) bool {
 		merge(set.collections[i], set.collections[index], graph.totEdges)
 		set.modularity += set.collections[i].modularity
 		set.collections[index], set.collections[set.numCollections-1] = set.collections[set.numCollections-1], set.collections[index]
+		set.collections[set.numCollections-1] = nil
 		set.numCollections--
 		return true
 	}
@@ -145,7 +146,6 @@ func (set *Set) writeRes(path, name string) {
 	var i uint32
 
 	fmt.Fprintf(file, "Q = %f \n", set.modularity+set.regularization)
-
 
 	for i = 0; i < set.numCollections; i++ {
 		for _, node := range set.collections[i].nodes {
