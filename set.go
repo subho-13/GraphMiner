@@ -225,12 +225,15 @@ func (set *Set) readRes(path, name string, graph *Graph) {
 			set.modularity += set.collections[mergeTo].modularity
 
 			delCollections = append(delCollections, ids[i])
+			set.numCollections--
 		}
 	}
 
 	sort.Slice(delCollections, func(i, j int) bool {
 		return delCollections[i] > delCollections[j]
 	})
+
+	set.numCollections = uint32(len(set.collections))
 
 	for id := range delCollections {
 		set.collections[id] = set.collections[set.numCollections-1]
