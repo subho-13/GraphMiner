@@ -41,10 +41,10 @@ type IndexIncrease struct {
 func (set *Set) coagulate(i uint32, graph *Graph) bool {
 	indexIncreaseChan := make(chan IndexIncrease, set.numCollections-1)
 
-	var j uint32
+	var j, k uint32
 	for j = 0; j < set.numCollections; j++ {
 		if i != j {
-			go func() {
+			go func(j uint32) {
 				newMod := costNewMod(
 					set.collections[i], set.collections[j], graph.totEdges)
 				newReg := costNewReg(
@@ -55,20 +55,29 @@ func (set *Set) coagulate(i uint32, graph *Graph) bool {
 				increaseReg := newReg - set.regularization
 				indexIncreaseChan <- IndexIncrease{index: j,
 					increase: increaseMod + increaseReg}
-			}()
+			}(j)
 		}
 	}
 
 	max := 0.0
 	var index uint32
 
-	for j = 0; j < set.numCollections; j++ {
-		if i != j {
-			inInc := <-indexIncreaseChan
-			if inInc.increase > max {
-				index = inInc.index
-				max = inInc.increase
+	for k = 0; k < set.numCollections; {
+		if k != i {
+			select {
+			case inInc := <-indexIncreaseChan:
+				{
+					if inInc.increase > max {
+						index = inInc.index
+						max = inInc.increase
+					}
+					k++
+				}
+			default:
+				continue
 			}
+		} else {
+			k++
 		}
 	}
 
@@ -80,8 +89,8 @@ func (set *Set) coagulate(i uint32, graph *Graph) bool {
 
 		merge(set.collections[i], set.collections[index], graph.totEdges)
 		set.modularity += set.collections[i].modularity
-		set.collections[index], set.collections[set.numCollections-1] = set.collections[set.numCollections-1], set.collections[index]
-		set.collections = set.collections[:set.numCollections-1]
+		set.collections[index] = set.collections[set.numCollections-1]
+		set.collections[set.numCollections-1] = nil
 		set.numCollections--
 		return true
 	}
