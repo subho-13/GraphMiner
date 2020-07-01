@@ -1,8 +1,12 @@
 package main
 
 import (
+	"bufio"
 	"fmt"
 	"os"
+	"sort"
+	"strconv"
+	"strings"
 )
 
 // Set ... Set of collections
@@ -13,7 +17,7 @@ type Set struct {
 	modularity     float64
 }
 
-func (set *Set) initialize(graph *Graph) {
+func (set *Set) initialize(graph *Graph, path, name string) {
 	set.numCollections = graph.totVertex
 	set.collections = make([]*Collection, set.numCollections)
 
@@ -30,6 +34,8 @@ func (set *Set) initialize(graph *Graph) {
 	set.regularization *= 1 / float64(set.numCollections)
 	set.regularization -= float64(set.numCollections) / float64(graph.totVertex)
 	set.regularization *= 0.5
+
+	set.readRes(path, name, graph)
 }
 
 // IndexIncrease ... Send (index, increase) in a channel
@@ -101,6 +107,18 @@ func (set *Set) coagulate(i uint32, graph *Graph) bool {
 func merge(c1, c2 *Collection, totalEdges uint32) {
 	c1.nodes = append(c1.nodes, c2.nodes...)
 
+	for _, node := range c2.nodes {
+		delete(c1.outNodes, node)
+	}
+
+	for _, node := range c1.nodes {
+		delete(c2.outNodes, node)
+	}
+
+	for node := range c2.outNodes {
+		c1.outNodes[node] = true
+	}
+
 	commOutEdge := 0
 
 	for edge := range c2.outEdges {
@@ -119,7 +137,7 @@ func merge(c1, c2 *Collection, totalEdges uint32) {
 }
 
 func costNewMod(c1, c2 *Collection, totalEdges uint32) float64 {
-	numCom := calcComEdge(c1.outEdges, c2.outEdges)
+	numCom := calcComEdge(c2.nodes, c1.outNodes, c1.outEdges, c2.outEdges)
 
 	newIntEdges := c1.intEdges + c2.intEdges + numCom
 	newTotEdges := c1.totEdges + c2.totEdges - numCom
@@ -134,7 +152,7 @@ func costNewReg(c1, c2 *Collection, oldRVal float64, n, v uint32) float64 {
 
 	newDensitySum := densitySum - (c1.density + c2.density)
 
-	numCom := calcComEdge(c1.outEdges, c2.outEdges)
+	numCom := calcComEdge(c2.nodes, c1.outNodes, c1.outEdges, c2.outEdges)
 	newNodes := uint32(len(c1.nodes) + len(c2.nodes))
 	newIntEdges := c1.intEdges + c2.intEdges + numCom
 
@@ -161,5 +179,59 @@ func (set *Set) writeRes(path, name string) {
 			fmt.Fprintf(file, "%d ", node)
 		}
 		fmt.Fprintf(file, "\n")
+	}
+}
+
+func (set *Set) readRes(path, name string, graph *Graph) {
+	fullname := path + "/" + name
+	file, err := os.Open(fullname)
+
+	if err != nil {
+		fmt.Println("Couldn't read output file")
+		return
+	}
+
+	scanner := bufio.NewScanner(file)
+	scanner.Split(bufio.ScanLines)
+
+	delCollections := make([]uint32, 0)
+
+	scanner.Scan()
+
+	for scanner.Scan() {
+		parts := strings.Split(scanner.Text(), " ")
+		ids := make([]uint32, 0)
+		for _, part := range parts {
+			if len(part) > 0 {
+				id, err := strconv.ParseUint(part, 10, 32)
+				check(err, "Couldn't read Integer")
+
+				ids = append(ids, uint32(id))
+			}
+		}
+
+		mergeTo := ids[0]
+
+		for i := 1; i < len(ids); i++ {
+			set.regularization = costNewReg(
+				set.collections[mergeTo], set.collections[ids[i]], set.regularization,
+				set.numCollections, graph.totVertex)
+			set.modularity -= (set.collections[mergeTo].modularity + set.collections[ids[i]].modularity)
+
+			merge(set.collections[mergeTo], set.collections[ids[i]], graph.totEdges)
+			set.modularity += set.collections[mergeTo].modularity
+
+			delCollections = append(delCollections, ids[i])
+		}
+	}
+
+	sort.Slice(delCollections, func(i, j int) bool {
+		return delCollections[i] > delCollections[j]
+	})
+
+	for id := range delCollections {
+		set.collections[id] = set.collections[set.numCollections-1]
+		set.collections[set.numCollections-1] = nil
+		set.numCollections--
 	}
 }

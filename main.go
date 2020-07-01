@@ -14,7 +14,7 @@ const path = "/home/subho"
 func main() {
 	scanner := bufio.NewScanner(os.Stdin)
 	scanner.Split(bufio.ScanWords)
-	fmt.Printf("Enter output filename :: ")
+	fmt.Printf("Enter input filename  :: ")
 	scanner.Scan()
 	inName := scanner.Text()
 	fmt.Printf("Enter output filename :: ")
@@ -35,7 +35,7 @@ func main() {
 	graph.ReadGraph(path, inName)
 
 	set := new(Set)
-	set.initialize(graph)
+	set.initialize(graph, path, outName)
 
 	var index uint32 = 0
 	stop := false

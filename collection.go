@@ -25,6 +25,7 @@ func getEdge(to, from uint32) Edge {
 type Collection struct {
 	nodes      []uint32
 	intEdges   uint32
+	outNodes   map[uint32]bool
 	outEdges   map[Edge]bool
 	totEdges   uint32
 	density    float64
@@ -58,9 +59,11 @@ func (collection *Collection) initialize(id uint32, graph *Graph) {
 	collection.intEdges = 0
 
 	collection.outEdges = make(map[Edge]bool)
+	collection.outNodes = make(map[uint32]bool)
 
 	for to := range graph.list[id] {
 		collection.outEdges[getEdge(to, id)] = true
+		collection.outNodes[to] = true
 	}
 
 	collection.totEdges = uint32(len(collection.outEdges))
@@ -70,7 +73,20 @@ func (collection *Collection) initialize(id uint32, graph *Graph) {
 		collection.totEdges, graph.totEdges)
 }
 
-func calcComEdge(outEdges1, outEdges2 map[Edge]bool) uint32 {
+func calcComEdge(nodes2 []uint32, outNodes1 map[uint32]bool, outEdges1, outEdges2 map[Edge]bool) uint32 {
+	found := false
+
+	for _, node := range nodes2 {
+		if outNodes1[node] == true {
+			found = true
+			break
+		}
+	}
+
+	if !found {
+		return 0
+	}
+
 	var comEdge uint32 = 0
 
 	for edge2 := range outEdges2 {
