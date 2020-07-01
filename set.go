@@ -174,9 +174,14 @@ func (set *Set) writeRes(path, name string) {
 
 	fmt.Fprintf(file, "Q = %f \n", set.modularity+set.regularization)
 
+	printed := make(map[uint32]bool)
+
 	for i = 0; i < set.numCollections; i++ {
 		for _, node := range set.collections[i].nodes {
-			fmt.Fprintf(file, "%d ", node)
+			if printed[node] != true {
+				fmt.Fprintf(file, "%d ", node)
+			}
+			printed[node] = true
 		}
 		fmt.Fprintf(file, "\n")
 	}
