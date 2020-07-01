@@ -172,8 +172,6 @@ func (set *Set) writeRes(path, name string) {
 
 	var i uint32
 
-	fmt.Fprintf(file, "Q = %f \n", set.modularity+set.regularization)
-
 	printed := make(map[uint32]bool)
 
 	for i = 0; i < set.numCollections; i++ {
