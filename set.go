@@ -266,7 +266,8 @@ func (set *Set) readPartial(path, name string, graph *Graph) {
 	scanner.Scan()
 
 	for scanner.Scan() {
-		if randNum.Uint32()%5 != 0 {
+		num := randNum.Uint32()
+		if num%2 != 0 && num%3 != 0 {
 			continue
 		}
 
