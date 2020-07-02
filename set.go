@@ -48,21 +48,7 @@ func (set *Set) coagulate(i uint32, graph *Graph) bool {
 	indexIncreaseChan := make(chan IndexIncrease, set.numCollections-1)
 
 	var j, k uint32
-	var divisor, count uint32
-
-	if set.numCollections > graph.totVertex/2 {
-		divisor = 13
-	} else if set.numCollections > graph.totVertex/4 {
-		divisor = 11
-	} else if set.numCollections > graph.totVertex/8 {
-		divisor = 7
-	} else if set.numCollections > graph.totVertex/16 {
-		divisor = 5
-	} else {
-		divisor = 1
-	}
-
-	num := randNum.Uint32()
+	var count uint32
 
 	myFunc := func(j uint32) {
 		newMod := costNewMod(
@@ -77,7 +63,7 @@ func (set *Set) coagulate(i uint32, graph *Graph) bool {
 			increase: increaseMod + increaseReg}
 	}
 
-	for j = 0; j < set.numCollections; j = j + num%divisor + 1 {
+	for j = 0; j < set.numCollections; j++ {
 		if i != j {
 			if j%5 == 0 {
 				go myFunc(j)
@@ -85,8 +71,6 @@ func (set *Set) coagulate(i uint32, graph *Graph) bool {
 				myFunc(j)
 			}
 			count++
-
-			num++
 		}
 	}
 
