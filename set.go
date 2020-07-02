@@ -322,12 +322,18 @@ func (set *Set) readPartial(path, name string, graph *Graph) {
 	for scanner.Scan() {
 		parts := strings.Split(scanner.Text(), " ")
 		ids := make([]uint32, 0)
-		for i := 0; i < len(parts); i = i + 1 + randNum.Int()%2 {
+		for i := 0; i < len(parts); {
 			part := parts[i]
 			if len(part) > 0 {
 				id, err := strconv.ParseUint(part, 10, 32)
 				check(err, "Couldn't read Integer")
 				ids = append(ids, uint32(id))
+			}
+
+			if randNum.Int()%5 < 4 {
+				i++
+			} else {
+				i = i + 2
 			}
 		}
 
