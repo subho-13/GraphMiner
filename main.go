@@ -3,6 +3,7 @@ package main
 import (
 	"bufio"
 	"fmt"
+	"math/rand"
 	"os"
 	"os/signal"
 	"syscall"
@@ -10,6 +11,8 @@ import (
 )
 
 const path = "/home/subho"
+
+var randNum = rand.New(rand.NewSource(time.Now().UnixNano()))
 
 func main() {
 	scanner := bufio.NewScanner(os.Stdin)
@@ -55,6 +58,7 @@ func main() {
 			{
 				fmt.Println("Writing file")
 				set.writeRes(path, outName, graph)
+				index = randNum.Uint32()
 			}
 		default:
 		}

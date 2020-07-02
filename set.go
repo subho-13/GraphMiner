@@ -35,7 +35,7 @@ func (set *Set) initialize(graph *Graph, path, name string) {
 	set.regularization -= float64(set.numCollections) / float64(graph.totVertex)
 	set.regularization *= 0.5
 
-	set.readRes(path, name, graph)
+	set.readPartial(path, name, graph)
 }
 
 // IndexIncrease ... Send (index, increase) in a channel
@@ -209,6 +209,67 @@ func (set *Set) readRes(path, name string, graph *Graph) {
 	scanner.Scan()
 
 	for scanner.Scan() {
+		parts := strings.Split(scanner.Text(), " ")
+		ids := make([]uint32, 0)
+		for _, part := range parts {
+			if len(part) > 0 {
+				id, err := strconv.ParseUint(part, 10, 32)
+				check(err, "Couldn't read Integer")
+
+				ids = append(ids, uint32(id))
+			}
+		}
+
+		mergeTo := ids[0]
+
+		for i := 1; i < len(ids); i++ {
+			set.regularization = costNewReg(
+				set.collections[mergeTo], set.collections[ids[i]], set.regularization,
+				set.numCollections, graph.totVertex)
+			set.modularity -= (set.collections[mergeTo].modularity + set.collections[ids[i]].modularity)
+
+			merge(set.collections[mergeTo], set.collections[ids[i]], graph.totEdges)
+			set.modularity += set.collections[mergeTo].modularity
+
+			delCollections = append(delCollections, ids[i])
+			set.numCollections--
+		}
+	}
+
+	sort.Slice(delCollections, func(i, j int) bool {
+		return delCollections[i] > delCollections[j]
+	})
+
+	set.numCollections = uint32(len(set.collections))
+
+	for id := range delCollections {
+		set.collections[id] = set.collections[set.numCollections-1]
+		set.collections[set.numCollections-1] = nil
+		set.numCollections--
+	}
+}
+
+func (set *Set) readPartial(path, name string, graph *Graph) {
+	fullname := path + "/" + name
+	file, err := os.Open(fullname)
+
+	if err != nil {
+		fmt.Println("Couldn't read output file")
+		return
+	}
+
+	scanner := bufio.NewScanner(file)
+	scanner.Split(bufio.ScanLines)
+
+	delCollections := make([]uint32, 0)
+
+	scanner.Scan()
+
+	for scanner.Scan() {
+		if randNum.Uint32()%5 != 0 {
+			continue
+		}
+
 		parts := strings.Split(scanner.Text(), " ")
 		ids := make([]uint32, 0)
 		for _, part := range parts {
