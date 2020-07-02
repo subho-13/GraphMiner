@@ -263,7 +263,6 @@ func (set *Set) readPartial(path, name string, graph *Graph) {
 
 	delCollections := make([]uint32, 0)
 
-	scanner.Scan()
 	buf := make([]byte, 0, 128*1024)
 	scanner.Buffer(buf, 2*1024*1024)
 
