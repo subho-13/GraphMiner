@@ -46,9 +46,9 @@ func main() {
 	for stop != true {
 		index = index % set.numCollections
 		if set.coagulate(index, graph) {
-			index += 2*index + 1
+			index += 3
 		} else {
-			index += 2
+			index++
 		}
 
 		select {

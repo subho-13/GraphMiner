@@ -51,11 +51,11 @@ func (set *Set) coagulate(i uint32, graph *Graph) bool {
 	var divisor, count uint32
 
 	if set.numCollections > graph.totVertex/2 {
-		divisor = 5
+		divisor = 13
 	} else if set.numCollections > graph.totVertex/4 {
-		divisor = 3
+		divisor = 11
 	} else if set.numCollections > graph.totEdges/8 {
-		divisor = 2
+		divisor = 7
 	} else {
 		divisor = 1
 	}
