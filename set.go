@@ -64,21 +64,26 @@ func (set *Set) coagulate(i uint32, graph *Graph) bool {
 
 	num := randNum.Uint32()
 
+	myFunc := func(j uint32) {
+		newMod := costNewMod(
+			set.collections[i], set.collections[j], graph.totEdges)
+		newReg := costNewReg(
+			set.collections[i], set.collections[j], set.regularization,
+			set.numCollections, graph.totVertex)
+
+		increaseMod := newMod - (set.collections[i].modularity + set.collections[j].modularity)
+		increaseReg := newReg - set.regularization
+		indexIncreaseChan <- IndexIncrease{index: j,
+			increase: increaseMod + increaseReg}
+	}
+
 	for j = 0; j < set.numCollections; j = j + num%divisor + 1 {
 		if i != j {
-			go func(j uint32) {
-				newMod := costNewMod(
-					set.collections[i], set.collections[j], graph.totEdges)
-				newReg := costNewReg(
-					set.collections[i], set.collections[j], set.regularization,
-					set.numCollections, graph.totVertex)
-
-				increaseMod := newMod - (set.collections[i].modularity + set.collections[j].modularity)
-				increaseReg := newReg - set.regularization
-				indexIncreaseChan <- IndexIncrease{index: j,
-					increase: increaseMod + increaseReg}
-			}(j)
-
+			if j%5 == 0 {
+				go myFunc(j)
+			} else {
+				myFunc(j)
+			}
 			count++
 
 			num++
@@ -121,42 +126,21 @@ func (set *Set) coagulate(i uint32, graph *Graph) bool {
 }
 
 func merge(c1, c2 *Collection, totalEdges uint32) {
+	for _, node := range c2.nodes {
+		delete(c1.outNodes, node)
+	}
 
-	doneDelC1Outnodes := make(chan bool, 1)
-	doneDelC2Outnodes := make(chan bool, 1)
-	doneAppC2nodesC1 := make(chan bool, 1)
-	doneAppC2Outnodes := make(chan bool, 1)
+	for _, node := range c1.nodes {
+		delete(c2.outNodes, node)
+	}
 
-	go func() {
-		for _, node := range c2.nodes {
-			delete(c1.outNodes, node)
-		}
-		doneDelC1Outnodes <- true
-	}()
+	for _, node := range c2.nodes {
+		c1.nodes = append(c1.nodes, node)
+	}
 
-	go func() {
-		for _, node := range c1.nodes {
-			delete(c2.outNodes, node)
-		}
-		doneDelC2Outnodes <- true
-	}()
-
-	<-doneDelC1Outnodes
-	<-doneDelC2Outnodes
-
-	go func() {
-		for _, node := range c2.nodes {
-			c1.nodes = append(c1.nodes, node)
-		}
-		doneAppC2nodesC1 <- true
-	}()
-
-	go func() {
-		for node := range c2.outNodes {
-			c1.outNodes[node] = true
-		}
-		doneAppC2Outnodes <- true
-	}()
+	for node := range c2.outNodes {
+		c1.outNodes[node] = true
+	}
 
 	commOutEdge := 0
 
@@ -168,27 +152,12 @@ func merge(c1, c2 *Collection, totalEdges uint32) {
 		}
 	}
 
-	<-doneAppC2nodesC1
-	<-doneAppC2Outnodes
-
 	c1.intEdges += c2.intEdges + uint32(commOutEdge)
 	c1.totEdges += c2.totEdges - uint32(commOutEdge)
 
-	doneCalcDensity := make(chan bool, 1)
-	doneCalcModularity := make(chan bool, 1)
+	c1.density = calcDensity(uint32(len(c1.nodes)), c1.intEdges)
 
-	go func() {
-		c1.density = calcDensity(uint32(len(c1.nodes)), c1.intEdges)
-		doneCalcDensity <- true
-	}()
-
-	go func() {
-		c1.modularity = calcMod(c1.intEdges, c1.totEdges, totalEdges)
-		doneCalcModularity <- true
-	}()
-
-	<-doneCalcDensity
-	<-doneCalcModularity
+	c1.modularity = calcMod(c1.intEdges, c1.totEdges, totalEdges)
 }
 
 func costNewMod(c1, c2 *Collection, totalEdges uint32) float64 {
