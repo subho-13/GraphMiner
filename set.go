@@ -54,8 +54,10 @@ func (set *Set) coagulate(i uint32, graph *Graph) bool {
 		divisor = 13
 	} else if set.numCollections > graph.totVertex/4 {
 		divisor = 11
-	} else if set.numCollections > graph.totEdges/8 {
+	} else if set.numCollections > graph.totVertex/8 {
 		divisor = 7
+	} else if set.numCollections > graph.totVertex/16 {
+		divisor = 5
 	} else {
 		divisor = 1
 	}
@@ -79,7 +81,7 @@ func (set *Set) coagulate(i uint32, graph *Graph) bool {
 
 			count++
 
-			num += 2*num + 1
+			num++
 		}
 	}
 
@@ -330,7 +332,7 @@ func (set *Set) readPartial(path, name string, graph *Graph) {
 				ids = append(ids, uint32(id))
 			}
 
-			if randNum.Int()%5 < 4 {
+			if randNum.Int()%109 < 108 {
 				i++
 			} else {
 				i = i + 2
