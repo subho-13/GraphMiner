@@ -324,3 +324,27 @@ func (set *Set) readPartial(path, name string, graph *Graph) {
 		set.numCollections--
 	}
 }
+
+func (set *Set) split(i uint32, graph *Graph) {
+	c := set.collections[i]
+	set.modularity -= c.modularity
+	set.regularization *= 2
+	set.regularization += float64(set.numCollections) / float64(graph.totVertex)
+	set.regularization *= float64(set.numCollections)
+
+	set.collections[i] = set.collections[set.numCollections-1]
+	set.collections[set.numCollections-1] = nil
+	set.numCollections--
+
+	for _, node := range c.nodes {
+		collection := new(Collection)
+		collection.initialize(node, graph)
+		set.modularity += collection.modularity
+		set.regularization += collection.density
+		set.collections[set.numCollections] = collection
+		set.numCollections++
+	}
+	set.regularization *= 1 / float64(set.numCollections)
+	set.regularization -= float64(set.numCollections) / float64(graph.totVertex)
+	set.regularization *= 0.5
+}

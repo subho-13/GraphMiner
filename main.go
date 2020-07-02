@@ -3,6 +3,7 @@ package main
 import (
 	"bufio"
 	"fmt"
+	"math"
 	"math/rand"
 	"os"
 	"os/signal"
@@ -43,6 +44,8 @@ func main() {
 	var index uint32 = 0
 	stop := false
 
+	var oldVal, newVal float64
+
 	for stop != true {
 		index = index % set.numCollections
 		if set.coagulate(index, graph) {
@@ -51,9 +54,16 @@ func main() {
 			index++
 		}
 
+		newVal = set.modularity + set.regularization
+
 		select {
 		case <-tickerPrinter.C:
-			fmt.Println(set.numCollections, set.modularity+set.regularization)
+			{
+				fmt.Println(set.numCollections, newVal)
+				if math.Abs(oldVal-newVal) < 0.001 {
+					set.split(index, graph)
+				}
+			}
 		case <-tickerWriter.C:
 			{
 				fmt.Println("Writing file")
@@ -72,6 +82,8 @@ func main() {
 			}
 		default:
 		}
+
+		oldVal = newVal
 	}
 
 }
