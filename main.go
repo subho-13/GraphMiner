@@ -62,7 +62,7 @@ func main() {
 
 			for i := 0; i < int(set.numCollections); i++ {
 				c := set.collections[i]
-				if len(c.nodes) > 0 && c.modularity+c.density < min {
+				if len(c.nodes) > 1 && c.modularity+c.density < min {
 					ind = i
 					min = c.modularity + c.density
 				}
