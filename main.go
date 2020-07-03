@@ -61,6 +61,7 @@ func main() {
 			{
 				fmt.Println(set.numCollections, newVal)
 				if math.Abs(oldVal-newVal) < 0.001 {
+					index = index % set.numCollections
 					set.split(index, graph)
 				}
 			}
