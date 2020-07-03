@@ -69,6 +69,7 @@ func main() {
 			}
 
 			set.split(uint32(ind), graph)
+			newVal = set.modularity + set.regularization
 		}
 
 		select {
