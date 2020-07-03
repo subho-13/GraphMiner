@@ -60,7 +60,8 @@ func main() {
 			min := 5.0
 			ind := -1
 
-			for i, c := range set.collections {
+			for i := 0; i < int(set.numCollections); i++ {
+				c := set.collections[i]
 				if c.modularity+c.density < min {
 					ind = i
 					min = c.modularity + c.density
