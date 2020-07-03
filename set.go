@@ -35,7 +35,7 @@ func (set *Set) initialize(graph *Graph, path, name string) {
 	set.regularization -= float64(set.numCollections) / float64(graph.totVertex)
 	set.regularization *= 0.5
 
-	set.readPartial(path, name, graph)
+	set.readRes(path, name, graph)
 }
 
 // IndexIncrease ... Send (index, increase) in a channel

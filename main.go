@@ -49,9 +49,9 @@ func main() {
 	for stop != true {
 		index = index % set.numCollections
 		if set.coagulate(index, graph) {
-			index += 3
-		} else {
 			index++
+		} else {
+			index = randNum.Uint32()
 		}
 
 		newVal = set.modularity + set.regularization
@@ -62,7 +62,7 @@ func main() {
 
 			for i := 0; i < int(set.numCollections); i++ {
 				c := set.collections[i]
-				if c.modularity+c.density < min {
+				if len(c.nodes) > 0 && c.modularity+c.density < min {
 					ind = i
 					min = c.modularity + c.density
 				}
@@ -79,7 +79,6 @@ func main() {
 			{
 				fmt.Println("Writing file")
 				set.writeRes(path, outName, graph)
-				index = randNum.Uint32()
 			}
 		default:
 		}
