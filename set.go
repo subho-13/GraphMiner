@@ -228,6 +228,10 @@ func (set *Set) readRes(path, name string, graph *Graph) {
 			}
 		}
 
+		if len(ids) == 0 {
+			continue
+		}
+
 		mergeTo := ids[0]
 
 		for i := 1; i < len(ids); i++ {
