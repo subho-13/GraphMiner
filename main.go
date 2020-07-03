@@ -57,8 +57,17 @@ func main() {
 		newVal = set.modularity + set.regularization
 
 		if math.Abs(oldVal-newVal) < 0.01 {
-			index = index % set.numCollections
-			set.split(index, graph)
+			min := 5.0
+			ind := -1
+
+			for i, c := range set.collections {
+				if c.modularity+c.density < min {
+					ind = i
+					min = c.modularity + c.density
+				}
+			}
+
+			set.split(uint32(ind), graph)
 		}
 
 		select {
