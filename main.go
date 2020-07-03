@@ -60,7 +60,8 @@ func main() {
 			min := 100.0
 			var ind uint32 = 0
 			var i uint32
-			for i = 0; i < set.numCollections; i++ {
+			n := set.numCollections - randNum.Uint32()%set.numCollections
+			for i = 0; i < n; i++ {
 				c := set.collections[i]
 				if len(c.nodes) > 1 && c.modularity+c.density < min {
 					ind = i
