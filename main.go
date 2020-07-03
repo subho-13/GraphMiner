@@ -48,24 +48,20 @@ func main() {
 
 	for stop != true {
 		index = index % set.numCollections
-		if set.coagulate(index, graph) {
-			index++
-		} else {
-			index = randNum.Uint32()
-		}
-
-		newVal = set.modularity + set.regularization
+		set.coagulate(index, graph)
+		index++
 
 		select {
 		case <-tickerPrinter.C:
 			{
+				newVal = set.modularity + set.regularization
 				fmt.Println(set.numCollections, newVal)
 				if math.Abs(oldVal-newVal) < 0.0001 {
 					min := 100.0
 					var ind uint32 = 0
 					var i uint32
 					n := set.numCollections - randNum.Uint32()%set.numCollections
-					m := n - randNum.Uint32()%n
+					m := n - randNum.Uint32()%(n/4)
 					for i = m; i < n; i++ {
 						c := set.collections[i]
 						if len(c.nodes) > 1 && c.modularity+c.density < min {
@@ -75,7 +71,6 @@ func main() {
 					}
 
 					set.split(ind, graph)
-					newVal = set.modularity + set.regularization
 				}
 				oldVal = newVal
 			}
