@@ -331,6 +331,7 @@ func (set *Set) split(i uint32, graph *Graph) {
 	set.regularization *= 2
 	set.regularization += float64(set.numCollections) / float64(graph.totVertex)
 	set.regularization *= float64(set.numCollections)
+	set.regularization -= c.density
 
 	set.collections[i] = set.collections[set.numCollections-1]
 	set.collections[set.numCollections-1] = nil
