@@ -56,12 +56,13 @@ func main() {
 
 		newVal = set.modularity + set.regularization
 
-		if math.Abs(oldVal-newVal) < 0.01 {
+		if math.Abs(oldVal-newVal) < 0.0001 {
 			min := 100.0
 			var ind uint32 = 0
 			var i uint32
 			n := set.numCollections - randNum.Uint32()%set.numCollections
-			for i = 0; i < n; i++ {
+			m := n - randNum.Uint32()%n
+			for i = m; i < n; i++ {
 				c := set.collections[i]
 				if len(c.nodes) > 1 && c.modularity+c.density < min {
 					ind = i
