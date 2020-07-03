@@ -64,9 +64,10 @@ func main() {
 					m := n - randNum.Uint32()%(n/4)
 					for i = m; i < n; i++ {
 						c := set.collections[i]
-						if len(c.nodes) > 1 && c.modularity+c.density < min {
+						val := (c.modularity + c.density) / math.Log10(float64(len(c.nodes)))
+						if len(c.nodes) > 1 && val < min {
 							ind = i
-							min = c.modularity + c.density
+							min = val
 						}
 					}
 
