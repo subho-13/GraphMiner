@@ -56,27 +56,29 @@ func main() {
 
 		newVal = set.modularity + set.regularization
 
-		if math.Abs(oldVal-newVal) < 0.0001 {
-			min := 100.0
-			var ind uint32 = 0
-			var i uint32
-			n := set.numCollections - randNum.Uint32()%set.numCollections
-			m := n - randNum.Uint32()%n
-			for i = m; i < n; i++ {
-				c := set.collections[i]
-				if len(c.nodes) > 1 && c.modularity+c.density < min {
-					ind = i
-					min = c.modularity + c.density
-				}
-			}
-
-			set.split(ind, graph)
-			newVal = set.modularity + set.regularization
-		}
-
 		select {
 		case <-tickerPrinter.C:
-			fmt.Println(set.numCollections, newVal)
+			{
+				fmt.Println(set.numCollections, newVal)
+				if math.Abs(oldVal-newVal) < 0.0001 {
+					min := 100.0
+					var ind uint32 = 0
+					var i uint32
+					n := set.numCollections - randNum.Uint32()%set.numCollections
+					m := n - randNum.Uint32()%n
+					for i = m; i < n; i++ {
+						c := set.collections[i]
+						if len(c.nodes) > 1 && c.modularity+c.density < min {
+							ind = i
+							min = c.modularity + c.density
+						}
+					}
+
+					set.split(ind, graph)
+					newVal = set.modularity + set.regularization
+				}
+				oldVal = newVal
+			}
 		case <-tickerWriter.C:
 			{
 				fmt.Println("Writing file")
@@ -94,8 +96,6 @@ func main() {
 			}
 		default:
 		}
-
-		oldVal = newVal
 	}
 
 }
