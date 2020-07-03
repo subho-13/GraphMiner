@@ -56,15 +56,14 @@ func main() {
 
 		newVal = set.modularity + set.regularization
 
+		if math.Abs(oldVal-newVal) < 0.01 {
+			index = index % set.numCollections
+			set.split(index, graph)
+		}
+
 		select {
 		case <-tickerPrinter.C:
-			{
-				fmt.Println(set.numCollections, newVal)
-				if math.Abs(oldVal-newVal) < 0.001 {
-					index = index % set.numCollections
-					set.split(index, graph)
-				}
-			}
+			fmt.Println(set.numCollections, newVal)
 		case <-tickerWriter.C:
 			{
 				fmt.Println("Writing file")
