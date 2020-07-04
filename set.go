@@ -4,6 +4,7 @@ import (
 	"bufio"
 	"fmt"
 	"os"
+	"sort"
 	"strconv"
 	"strings"
 )
@@ -215,6 +216,9 @@ func (set *Set) readRes(path, name string, graph *Graph) {
 	scanner.Buffer(buf, 3*1024*1024)
 
 	count := graph.totVertex
+	sort.Slice(set.collections, func(i, j int) bool {
+		return set.collections[i].nodes[0] < set.collections[j].nodes[0]
+	})
 
 	collected := make(map[uint64]bool)
 
