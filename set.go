@@ -221,6 +221,7 @@ func (set *Set) readRes(path, name string, graph *Graph) {
 	})
 
 	collected := make(map[uint64]bool)
+	delCollection := make([]uint32, 0)
 
 	for scanner.Scan() {
 		parts := strings.Split(scanner.Text(), " ")
@@ -255,14 +256,18 @@ func (set *Set) readRes(path, name string, graph *Graph) {
 
 			set.collections[ids[i]] = nil
 			count--
+
+			delCollection = append(delCollection, ids[i])
 		}
 	}
 
-	for i := set.numCollections; i > 0; i-- {
-		if set.collections[i-1] == nil {
-			set.collections[i-1] = set.collections[set.numCollections-1]
-			set.numCollections--
-		}
+	sort.Slice(delCollection, func(i, j int) bool {
+		return delCollection[i] > delCollection[j]
+	})
+
+	for _, id := range delCollection {
+		set.collections[id] = set.collections[set.numCollections-1]
+		set.numCollections--
 	}
 }
 
