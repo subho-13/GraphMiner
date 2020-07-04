@@ -25,7 +25,7 @@ func main() {
 	scanner.Scan()
 	outName := scanner.Text()
 
-	tickerWriter := time.NewTicker(time.Second * 17)
+	tickerWriter := time.NewTicker(time.Second * 103)
 	tickerPrinter := time.NewTicker(time.Second * 11)
 	defer tickerWriter.Stop()
 	defer tickerPrinter.Stop()

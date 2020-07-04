@@ -253,10 +253,7 @@ func (set *Set) readRes(path, name string, graph *Graph) {
 
 			merge(set.collections[mergeTo], set.collections[ids[i]], graph.totEdges)
 			set.modularity += set.collections[mergeTo].modularity
-
-			set.collections[ids[i]] = nil
 			count--
-
 			delCollection = append(delCollection, ids[i])
 		}
 	}
@@ -267,6 +264,7 @@ func (set *Set) readRes(path, name string, graph *Graph) {
 
 	for _, id := range delCollection {
 		set.collections[id] = set.collections[set.numCollections-1]
+		set.collections[set.numCollections-1] = nil
 		set.numCollections--
 	}
 }
