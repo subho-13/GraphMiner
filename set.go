@@ -210,8 +210,7 @@ func (set *Set) readRes(path, name string, graph *Graph) {
 
 	scanner := bufio.NewScanner(file)
 	scanner.Split(bufio.ScanLines)
-
-	delCollections := make([]uint32, 0)
+	
 	buf := make([]byte, 0, 128*1024)
 	scanner.Buffer(buf, 3*1024*1024)
 
