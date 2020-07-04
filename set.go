@@ -210,7 +210,7 @@ func (set *Set) readRes(path, name string, graph *Graph) {
 
 	scanner := bufio.NewScanner(file)
 	scanner.Split(bufio.ScanLines)
-	
+
 	buf := make([]byte, 0, 128*1024)
 	scanner.Buffer(buf, 3*1024*1024)
 
@@ -254,9 +254,9 @@ func (set *Set) readRes(path, name string, graph *Graph) {
 		}
 	}
 
-	for i := set.numCollections - 1; i >= 0; i-- {
-		if set.collections[i] == nil {
-			set.collections[i] = set.collections[set.numCollections-1]
+	for i := set.numCollections; i > 0; i-- {
+		if set.collections[i-1] == nil {
+			set.collections[i-1] = set.collections[set.numCollections-1]
 			set.numCollections--
 		}
 	}
