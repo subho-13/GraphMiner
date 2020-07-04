@@ -44,19 +44,20 @@ func main() {
 	var index uint32 = 0
 	stop := false
 
-	var oldVal, newVal float64
+	var oldVal, oldValWrite, newVal float64
 
 	for stop != true {
 		index = index % set.numCollections
 		set.coagulate(index, graph)
 		index++
 
+		newVal = set.modularity + set.regularization
+
 		select {
 		case <-tickerPrinter.C:
 			{
-				newVal = set.modularity + set.regularization
 				fmt.Println(set.numCollections, newVal)
-				if math.Abs(oldVal-newVal) < 0.0001 {
+				if math.Abs(oldVal-newVal) < 0.000001 {
 					min := 100.0
 					var ind uint32 = 0
 					var i uint32
@@ -77,8 +78,11 @@ func main() {
 			}
 		case <-tickerWriter.C:
 			{
-				fmt.Println("Writing file")
-				set.writeRes(path, outName, graph)
+				if newVal > oldValWrite {
+					fmt.Println("Writing file")
+					set.writeRes(path, outName, graph)
+					oldValWrite = newVal
+				}
 			}
 		default:
 		}
