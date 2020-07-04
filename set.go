@@ -4,7 +4,6 @@ import (
 	"bufio"
 	"fmt"
 	"os"
-	"sort"
 	"strconv"
 	"strings"
 )
@@ -252,87 +251,15 @@ func (set *Set) readRes(path, name string, graph *Graph) {
 			set.modularity += set.collections[mergeTo].modularity
 
 			set.collections[ids[i]] = nil
-			delCollections = append(delCollections, ids[i])
 			count--
 		}
 	}
 
-	sort.Slice(delCollections, func(i, j int) bool {
-		return delCollections[i] > delCollections[j]
-	})
-
-	for _, id := range delCollections {
-		set.collections[id] = set.collections[set.numCollections-1]
-		set.collections[set.numCollections-1] = nil
-		set.numCollections--
-	}
-}
-
-func (set *Set) readPartial(path, name string, graph *Graph) {
-	fullname := path + "/" + name
-	file, err := os.Open(fullname)
-
-	if err != nil {
-		fmt.Println("Couldn't read output file")
-		return
-	}
-
-	scanner := bufio.NewScanner(file)
-	scanner.Split(bufio.ScanLines)
-
-	delCollections := make([]uint32, 0)
-
-	buf := make([]byte, 0, 128*1024)
-	scanner.Buffer(buf, 2*1024*1024)
-
-	for scanner.Scan() {
-		parts := strings.Split(scanner.Text(), " ")
-		ids := make([]uint32, 0)
-		for i := 0; i < len(parts); {
-			part := parts[i]
-			if len(part) > 0 {
-				id, err := strconv.ParseUint(part, 10, 32)
-				check(err, "Couldn't read Integer")
-				ids = append(ids, uint32(id))
-			}
-
-			if randNum.Int()%109 < 108 {
-				i++
-			} else {
-				i = i + 2
-			}
-		}
-
-		if len(ids) == 0 {
-			continue
-		}
-
-		mergeTo := ids[0]
-
-		for i := 1; i < len(ids); i++ {
-			set.regularization = costNewReg(
-				set.collections[mergeTo], set.collections[ids[i]], set.regularization,
-				set.numCollections, graph.totVertex)
-			set.modularity -= (set.collections[mergeTo].modularity + set.collections[ids[i]].modularity)
-
-			merge(set.collections[mergeTo], set.collections[ids[i]], graph.totEdges)
-			set.modularity += set.collections[mergeTo].modularity
-
-			delCollections = append(delCollections, ids[i])
+	for i := set.numCollections - 1; i >= 0; i-- {
+		if set.collections[i] == nil {
+			set.collections[i] = set.collections[set.numCollections-1]
 			set.numCollections--
 		}
-	}
-
-	sort.Slice(delCollections, func(i, j int) bool {
-		return delCollections[i] > delCollections[j]
-	})
-
-	set.numCollections = uint32(len(set.collections))
-
-	for id := range delCollections {
-		set.collections[id] = set.collections[set.numCollections-1]
-		set.collections[set.numCollections-1] = nil
-		set.numCollections--
 	}
 }
 

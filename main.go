@@ -64,27 +64,27 @@ func main() {
 					fmt.Println("Writing file")
 					set.writeRes(path, outName, graph)
 					oldValWrite = newVal
-
-					if math.Abs(oldVal-newVal) < 0.000001 {
-						min := 100.0
-						var ind uint32 = 0
-						var i uint32
-						n := set.numCollections - randNum.Uint32()%set.numCollections
-						m := n - randNum.Uint32()%(n/4)
-						for i = m; i < n; i++ {
-							c := set.collections[i]
-							val := (c.modularity + c.density) / math.Log10(float64(len(c.nodes)))
-							if len(c.nodes) > 1 && val < min {
-								ind = i
-								min = val
-							}
-						}
-
-						set.split(ind, graph)
-					}
-					oldVal = newVal
 				}
+				if math.Abs(oldVal-newVal) < 0.000001 {
+					min := 100.0
+					var ind uint32 = 0
+					var i uint32
+					n := set.numCollections - randNum.Uint32()%set.numCollections
+					m := n - randNum.Uint32()%(n/4)
+					for i = m; i < n; i++ {
+						c := set.collections[i]
+						val := (c.modularity + c.density) / math.Log10(float64(len(c.nodes)))
+						if len(c.nodes) > 1 && val < min {
+							ind = i
+							min = val
+						}
+					}
+
+					set.split(ind, graph)
+				}
+				oldVal = newVal
 			}
+
 		default:
 		}
 
