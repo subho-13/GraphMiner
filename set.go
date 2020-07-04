@@ -214,7 +214,11 @@ func (set *Set) readRes(path, name string, graph *Graph) {
 
 	delCollections := make([]uint32, 0)
 	buf := make([]byte, 0, 128*1024)
-	scanner.Buffer(buf, 2*1024*1024)
+	scanner.Buffer(buf, 3*1024*1024)
+
+	count := graph.totVertex
+
+	collected := make(map[uint64]bool)
 
 	for scanner.Scan() {
 		parts := strings.Split(scanner.Text(), " ")
@@ -224,11 +228,16 @@ func (set *Set) readRes(path, name string, graph *Graph) {
 				id, err := strconv.ParseUint(part, 10, 32)
 				check(err, "Couldn't read Integer")
 
+				if collected[id] == true {
+					continue
+				}
+
+				collected[id] = true
 				ids = append(ids, uint32(id))
 			}
 		}
 
-		if len(ids) == 0 {
+		if len(ids) < 2 {
 			continue
 		}
 
@@ -236,15 +245,15 @@ func (set *Set) readRes(path, name string, graph *Graph) {
 
 		for i := 1; i < len(ids); i++ {
 			set.regularization = costNewReg(
-				set.collections[mergeTo], set.collections[ids[i]], set.regularization,
-				set.numCollections, graph.totVertex)
+				set.collections[mergeTo], set.collections[ids[i]], set.regularization, count, graph.totVertex)
 			set.modularity -= (set.collections[mergeTo].modularity + set.collections[ids[i]].modularity)
 
 			merge(set.collections[mergeTo], set.collections[ids[i]], graph.totEdges)
 			set.modularity += set.collections[mergeTo].modularity
 
+			set.collections[ids[i]] = nil
 			delCollections = append(delCollections, ids[i])
-			set.numCollections--
+			count--
 		}
 	}
 
@@ -252,9 +261,7 @@ func (set *Set) readRes(path, name string, graph *Graph) {
 		return delCollections[i] > delCollections[j]
 	})
 
-	set.numCollections = uint32(len(set.collections))
-
-	for id := range delCollections {
+	for _, id := range delCollections {
 		set.collections[id] = set.collections[set.numCollections-1]
 		set.collections[set.numCollections-1] = nil
 		set.numCollections--
