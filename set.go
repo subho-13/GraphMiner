@@ -65,7 +65,7 @@ func (set *Set) coagulate(i uint32, graph *Graph) bool {
 
 	for j = i % 13; j < set.numCollections; j += set.numCollections/20000 + 1 {
 		if i != j {
-			if j%5 == 0 {
+			if j%2 == 0 {
 				go myFunc(j)
 			} else {
 				myFunc(j)
